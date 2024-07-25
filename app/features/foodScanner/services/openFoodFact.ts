@@ -1,16 +1,14 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { RootObject as ProductI } from "../config/types/openFoodFact";
 
-export const openFoodFactApi = createApi({
-  reducerPath: "openFoodFactApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "https://world.openfoodfacts.net/api/v2/",
-  }),
-  endpoints: (builder) => ({
-    getProductByBarCode: builder.query<ProductI, string>({
-      query: (barcode) => `product/${barcode}`,
-    }),
-  }),
-});
+export const fetchProductByBarCode = async (barcode: string) => {
+  const response = await fetch(
+    `https://world.openfoodfacts.net/api/v2/product/${barcode}`
+  );
 
-export const { useGetProductByBarCodeQuery } = openFoodFactApi;
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+
+  const data: ProductI = await response.json();
+  return data.product;
+};

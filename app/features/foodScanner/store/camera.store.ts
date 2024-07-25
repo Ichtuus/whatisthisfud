@@ -1,13 +1,15 @@
-import { configureStore, createSlice } from "@reduxjs/toolkit";
+import { combineReducers, configureStore, createSlice } from "@reduxjs/toolkit";
 
-const cameraSlice = createSlice({
-  name: "cameraa",
-  initialState: {
-    isDisplayCamera: false,
-  },
+export type CameraSliceState = { isDisplayCamera: boolean };
+const initialState: CameraSliceState = { isDisplayCamera: false };
+const rootReducer = combineReducers({})
+export type IRootState = ReturnType<typeof rootReducer>
+
+export const cameraSlice = createSlice({
+  name: "camera",
+  initialState,
   reducers: {
     updateDisplayCamera: (state, action) => {
-      console.log("state camera");
       state.isDisplayCamera = action.payload;
     },
   },

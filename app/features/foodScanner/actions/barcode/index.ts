@@ -1,14 +1,8 @@
-import { type BarcodeScanningResult } from "expo-camera";
-// import { useDispatch } from "react-redux";
-// const dispatch = useDispatch();
+import { fetchProductByBarCode } from "../../services/openFoodFact";
 
-export function getBarCode(scanningResult: BarcodeScanningResult) {
-  console.log("OUAAAAAAAAAIS ", scanningResult);
-  if (scanningResult.data) {
-    // do smoething else
-    // dispatch({
-    //   type: "barcode/getBarCodeData",
-    //   payload: scanningResult.data,
-    // });
+export async function getBarCode(scanningResult: string) {
+  if (scanningResult) {
+    const product = await fetchProductByBarCode(scanningResult);
+    return product;
   }
 }
