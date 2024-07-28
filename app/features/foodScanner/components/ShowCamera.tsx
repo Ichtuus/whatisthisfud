@@ -1,51 +1,55 @@
 import { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Button } from "react-native-paper";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Button, MD2Colors, Text } from "react-native-paper";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useQuery, useQueryClient } from "react-query";
 import {
   CameraType,
   CameraView,
   type BarcodeScanningResult,
 } from "expo-camera";
 
-import { getBarCode } from "../actions/barcode";
-import { ActivityIndicator, MD2Colors } from "react-native-paper";
 import { useCameraMode } from "./hooks/cameraMode";
-import { IRootState } from "../store/camera.store";
+// import { IRootState } from "../store/camera.store";
+import { Product } from "./product";
+import { updateDisplayCamera } from "../store/camera.reducer";
+import { type Product as ProductType } from "../config/types/openFoodFact";
+import { fetchProduct } from "../actions/barcode";
 
 interface FetchError extends Error {
   message: string;
 }
 
 export function ShowCamera() {
-  const isDisplayCamera = useSelector<IRootState, boolean>(
+  const dispatch = useDispatch();
+
+  const isDisplayCamera = useSelector<any, boolean>(
     (state) => state.camera.isDisplayCamera
   );
-  const dispatch = useDispatch();
+
+  const products = useSelector<any, ProductType[]>(
+    (state) => state?.product?.products
+  );
+
+  const loading = useSelector<any, boolean>((state) => state.product.loading);
+
+  const error = useSelector<any, string | null>((state) => state.product.error);
+
   const [scannedBarcode, setScannedBarcode] = useState<string>(
     null as unknown as string
   );
   const [cameraMode, toggleCameraMode] = useCameraMode();
 
-  const queryClient = useQueryClient();
-
-  const { data, error, isLoading } = useQuery(
-    ["barcodeKey", scannedBarcode],
-    async () => await getBarCode(scannedBarcode),
-    {
-      enabled: !!scannedBarcode,
-    }
-  );
-
   const handleBarcodeScanned = ({ data }: BarcodeScanningResult) => {
     console.log("barcode scanned :", data);
     setScannedBarcode(data);
-    dispatch({
-      type: "camera/updateDisplayCamera",
-      payload: false,
-    });
+    dispatch(fetchProduct(data));
+    console.log;
+    toggleCamera();
+  };
+
+  const toggleCamera = () => {
+    dispatch(updateDisplayCamera(!isDisplayCamera) as any);
   };
 
   if (isDisplayCamera) {
@@ -56,19 +60,11 @@ export function ShowCamera() {
         onBarcodeScanned={(barcode) => handleBarcodeScanned(barcode)}
       >
         <View style={styles.container}>
-          <Button
-            mode="text"
-            onPress={() =>
-              dispatch({
-                type: "camera/updateDisplayCamera",
-                payload: false,
-              })
-            }
-          >
+          <Button mode="text" onPress={() => toggleCamera()}>
             Cancel
           </Button>
 
-          <Button mode="contained" onPress={() => toggleCameraMode}>
+          <Button mode="contained" onPress={toggleCameraMode as () => void}>
             Flip the camera
           </Button>
         </View>
@@ -84,16 +80,31 @@ export function ShowCamera() {
             style={styles.button}
             icon="camera"
             onPress={() => {
-              dispatch({
-                type: "camera/updateDisplayCamera",
-                payload: true,
-              });
+              toggleCamera();
             }}
           >
             Activate
           </Button>
         </TouchableOpacity>
 
+        {loading && (
+          <View style={styles.container}>
+            <ActivityIndicator animating={true} color={MD2Colors.red800} />
+          </View>
+        )}
+
+        {error && (
+          <View>
+            <Text>Error: {error}</Text>
+          </View>
+        )}
+
+        {products &&
+          products.map((product, index) => (
+            <Product key={index} product={product} />
+          ))}
+
+        {/* 
         {isLoading && (
           <View style={styles.container}>
             <ActivityIndicator animating={true} color={MD2Colors.red800} />
@@ -104,12 +115,7 @@ export function ShowCamera() {
             <Text>Error: {(error as FetchError).message}</Text>
           </View>
         )}
-        {data && (
-          <View style={styles.containerProduct}>
-            <Text>Name of product: {data.product_name || "Inconnu"}</Text>
-            <Text>brands: {data.brands || "Inconnue"}</Text>
-          </View>
-        )}
+        {data && <Product product={data} />} */}
       </View>
     );
   }

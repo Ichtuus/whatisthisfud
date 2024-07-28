@@ -6,9 +6,8 @@ import {
   PaperProvider,
 } from "react-native-paper";
 
-import { cameraStore } from "./features/foodScanner/store/camera.store";
-
 import Router from "./router";
+import store from "./features/foodScanner/store";
 
 const theme = {
   ...DefaultTheme,
@@ -25,7 +24,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <QueryClientProvider client={queryClient}>
-        <Provider store={cameraStore}>
+        <Provider store={store}>
           <PaperProvider theme={theme}>
             <Router />
           </PaperProvider>

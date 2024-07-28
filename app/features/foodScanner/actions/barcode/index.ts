@@ -1,8 +1,16 @@
+import { createAsyncThunk } from "@reduxjs/toolkit";
 import { fetchProductByBarCode } from "../../services/openFoodFact";
 
-export async function getBarCode(scanningResult: string) {
-  if (scanningResult) {
-    const product = await fetchProductByBarCode(scanningResult);
-    return product;
+export const fetchProduct = createAsyncThunk(
+  "products/fetchProduct",
+  async (barcode: string, thunkAPI) => {
+    console.log("WHY");
+    try {
+      const product = await fetchProductByBarCode(barcode);
+
+      return product;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
   }
-}
+);
